@@ -113,7 +113,6 @@ def do_lookups(lookup_dict):
         ips += ip + ' '
     output = subprocess.check_output("nmap -p445 -Pn --script smb-vuln-ms17-010.nse %s" % ips, shell=True)
     vulnerable_ips = []
-    #output = subprocess.check_output("nmap -p445 -Pn --script smb-vuln-ms17-010.nse %s" % '137.99.69.111', shell=True)
     output = output.split('\n') 
     for line in output:
         ip = re.findall( r'[0-9]+(?:\.[0-9]+){3}', line)
@@ -137,27 +136,27 @@ def do_geode_lookup(geode_cur, mac):
 
 
 def send_email(first_name, email, mac, ip):
-    # First do a geode lookup on mac
     conf_file = "mass_mail_creds"
     parser = CP.RawConfigParser()
     parser.read(conf_file)
-    smtpObj = smtplib.SMTP('massmail.uconn.edu', 587)
-    smtpObj.ehlo()
-    smtpObj.starttls()
-    smtpObj.ehlo()
-    smtpObj.login(parser.get("senior_design", "user"), parser.get("senior_design", "pass"))
+
+    server = smtplib.SMTP('massmail.uconn.edu', 587)
+    server.set_debuglevel(1)
+    server.ehlo()
+    server.starttls()
+    server.ehlo()
+    server.login(parser.get("senior_design", "user"), parser.get("senior_design", "pass"))
+
+    message_subject = "Test"
+    email = "TEST"
 
     fromaddr = "security@uconn.edu"
     toaddr = ["stephen.lincoln@uconn.edu"]
-    
-    subject = "Wannacry pls fix"
-    body = "Srsly guys"
-
-    msg = "Subject: {}\n\n{}".format(subject, body)
-    smtpObj.sendmail(fromaddr, toaddr, msg)
-    smtpObj.quit()
-
-    print "Sent mail"
+    msg = "From: %s\r\nTo: %s\r\nSubject: %s\r\n\r\n" % (fromaddr, toaddr, message_subject)
+    msg += email
+    server.sendmail(fromaddr, toaddr, msg)
+    server.quit()
+    print "Sent"
 
 def do_LDAP_lookup(netid):
     ldap = ldaplib.LDAP()
